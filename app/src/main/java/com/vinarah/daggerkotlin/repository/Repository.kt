@@ -11,4 +11,5 @@ import com.vinarah.daggerkotlin.vo.Resource
 interface Repository {
     fun saveTodo(todo: Todo)
     fun loadTodos(): LiveData<Resource<List<Todo>>>
+    fun updateTodo(todo: Todo)
 }

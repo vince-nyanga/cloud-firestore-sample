@@ -12,6 +12,9 @@ import com.vinarah.daggerkotlin.vo.Resource
 
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 /**
@@ -22,35 +25,35 @@ import java.util.*
 
 class FirestoreRepository : Repository {
 
+    private val db by lazy { FirebaseFirestore.getInstance() }
+
     override fun saveTodo(todo: Todo) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection(TODOS_REF).add(todo)
+        val documentRef = db.collection(TODOS_REF).document()
+        todo.id = documentRef.id
+        documentRef.set(todo)
     }
 
     override fun loadTodos(): LiveData<Resource<List<Todo>>> {
-        return LiveDataReactiveStreams.fromPublisher(getTodos())
+        return LiveDataReactiveStreams.fromPublisher(getTodos().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()))
     }
 
-    private fun getTodos(): Flowable<Resource<List<Todo>>>{
+    private fun getTodos(): Flowable<Resource<List<Todo>>> {
         return Flowable.create<Resource<List<Todo>>>({ emitter ->
-            val db = FirebaseFirestore.getInstance()
             emitter.onNext(Resource.loading())
-            db.collection(TODOS_REF).addSnapshotListener(EventListener { documentSnapshots, firebaseFirestoreException ->
-                if(firebaseFirestoreException != null){
+            db.collection(TODOS_REF).orderBy("done").addSnapshotListener(EventListener { documentSnapshots, firebaseFirestoreException ->
+                if (firebaseFirestoreException != null) {
                     emitter.onNext(Resource.error(firebaseFirestoreException.message))
                     return@EventListener
                 }
                 val todos = ArrayList<Todo>()
-                if (documentSnapshots != null) {
-                    for (documentSnapshot in documentSnapshots) {
-                        val todo = documentSnapshot.toObject(Todo::class.java)
-                        todos.add(todo)
-                    }
-                }
-                emitter.onNext(if (todos.isEmpty()) Resource.empty()
-                else Resource.success<List<Todo>>(todos))
+                documentSnapshots?.mapTo(todos) { it.toObject(Todo::class.java) }
+                emitter.onNext(if (todos.isEmpty()) Resource.empty() else Resource.success<List<Todo>>(todos))
             })
         }, BackpressureStrategy.BUFFER)
+    }
+
+    override fun updateTodo(todo: Todo) {
+        db.collection(TODOS_REF).document(todo.id).update("done", todo.done)
     }
 
     companion object {

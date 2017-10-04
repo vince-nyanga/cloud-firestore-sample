@@ -10,21 +10,15 @@ import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.view.View
 import android.widget.Toast
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
 import com.vinarah.daggerkotlin.adapter.TodosAdapter
 import com.vinarah.daggerkotlin.di.Injectable
 import com.vinarah.daggerkotlin.model.Todo
 import com.vinarah.daggerkotlin.viewmodel.MainViewModel
 import com.vinarah.daggerkotlin.viewmodel.ViewModelFactory
 import com.vinarah.daggerkotlin.vo.Resource
-import java.lang.Exception
 import javax.inject.Inject
 
-class MainActivity : AppCompatActivity(), Injectable {
-
+class MainActivity : AppCompatActivity(), Injectable, TodosAdapter.OnTodoClickListener {
 
     @Inject lateinit var preferences: SharedPreferences
 
@@ -41,7 +35,7 @@ class MainActivity : AppCompatActivity(), Injectable {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        adapter.todoClickListener = this
         findViewById<RecyclerView>(R.id.recyclerView).adapter = adapter
         subscribeToData()
     }
@@ -50,6 +44,7 @@ class MainActivity : AppCompatActivity(), Injectable {
         viewModel.todos.observe(this, Observer<Resource<List<Todo>>> { todoResource ->
             when (todoResource?.status) {
                 Resource.EMPTY -> {
+                    adapter.setList(emptyList())
                     Toast.makeText(applicationContext, "Empty list", Toast.LENGTH_LONG).show()
                 }
                 Resource.LOADING -> {
@@ -75,6 +70,11 @@ class MainActivity : AppCompatActivity(), Injectable {
             viewModel.saveTodo(todo)
             taskNameEditText.setText("")
         }
+    }
+
+    override fun onTodoClicked(todo: Todo) {
+        todo.done = !todo.done
+        viewModel.updateTodo(todo)
     }
 
 }

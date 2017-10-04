@@ -4,10 +4,10 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import com.vinarah.daggerkotlin.R
 import com.vinarah.daggerkotlin.model.Todo
-import kotlinx.android.synthetic.main.todo_item.*
 
 /**
  * @author Vincent
@@ -17,6 +17,8 @@ class TodosAdapter: RecyclerView.Adapter<TodosAdapter.TodoViewHolder>() {
 
     var todos: List<Todo> = emptyList()
 
+    var todoClickListener: OnTodoClickListener ? =  null
+
     fun setList(list: List<Todo>){
         todos = list
         notifyDataSetChanged()
@@ -25,9 +27,12 @@ class TodosAdapter: RecyclerView.Adapter<TodosAdapter.TodoViewHolder>() {
         holder?.bindTo(todos.get(position))
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): TodoViewHolder=
-            TodoViewHolder(LayoutInflater.from(parent?.context).inflate(R.layout.todo_item,
-                    parent,false))
+    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): TodoViewHolder {
+        val holder =TodoViewHolder(LayoutInflater.from(parent?.context).inflate(R.layout.todo_item,
+        parent, false))
+        holder.todoClickListener  = todoClickListener
+        return holder
+    }
 
     override fun getItemCount(): Int {
         return todos.size
@@ -35,10 +40,20 @@ class TodosAdapter: RecyclerView.Adapter<TodosAdapter.TodoViewHolder>() {
 
     class TodoViewHolder(view: View): RecyclerView.ViewHolder(view){
 
-        private val taskNameTextView = itemView.findViewById<TextView>(R.id.taskNameTv)
+        var todoClickListener: OnTodoClickListener ? =  null
 
-        fun bindTo(todo: Todo?){
-            taskNameTextView.text = "${todo?.name}"
+        private val taskNameTextView =itemView.findViewById<TextView>(R.id.taskNameTv)
+        private val doneImageView = itemView.findViewById<ImageView>(R.id.doneIv)
+
+        fun bindTo(todo: Todo){
+            taskNameTextView.text = "${todo.name}"
+            itemView.setOnClickListener { view -> todoClickListener?.onTodoClicked(todo) }
+            doneImageView.visibility = if (todo.done) View.VISIBLE else View.GONE
+
         }
+    }
+
+    interface OnTodoClickListener {
+        fun onTodoClicked(todo: Todo)
     }
 }
