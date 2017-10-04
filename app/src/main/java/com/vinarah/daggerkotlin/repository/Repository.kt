@@ -12,4 +12,5 @@ interface Repository {
     fun saveTodo(todo: Todo)
     fun loadTodos(): LiveData<Resource<List<Todo>>>
     fun updateTodo(todo: Todo)
+    fun deleteTodo(todo: Todo)
 }

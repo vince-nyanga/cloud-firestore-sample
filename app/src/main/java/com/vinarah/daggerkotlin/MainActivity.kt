@@ -77,4 +77,8 @@ class MainActivity : AppCompatActivity(), Injectable, TodosAdapter.OnTodoClickLi
         viewModel.updateTodo(todo)
     }
 
+    override fun onDeleteTodoClicked(todo: Todo) {
+        viewModel.deleteTodo(todo)
+    }
+
 }

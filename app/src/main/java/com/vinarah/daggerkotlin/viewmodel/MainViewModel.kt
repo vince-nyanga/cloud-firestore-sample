@@ -16,4 +16,6 @@ class MainViewModel @Inject constructor(val repository: Repository): ViewModel()
     fun saveTodo(todo: Todo)=repository.saveTodo(todo)
 
     fun  updateTodo(todo: Todo) = repository.updateTodo(todo)
+
+    fun  deleteTodo(todo: Todo) = repository.deleteTodo(todo)
 }

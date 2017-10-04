@@ -1,18 +1,13 @@
 package com.vinarah.daggerkotlin.repository
 
+
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.LiveDataReactiveStreams
-
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.firestore.*
 import com.vinarah.daggerkotlin.model.Todo
 import com.vinarah.daggerkotlin.vo.Resource
-
-
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.*
@@ -54,6 +49,10 @@ class FirestoreRepository : Repository {
 
     override fun updateTodo(todo: Todo) {
         db.collection(TODOS_REF).document(todo.id).update("done", todo.done)
+    }
+
+    override fun deleteTodo(todo: Todo) {
+        db.collection(TODOS_REF).document(todo.id).delete()
     }
 
     companion object {

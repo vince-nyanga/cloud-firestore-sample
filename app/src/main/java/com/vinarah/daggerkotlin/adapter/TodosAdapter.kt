@@ -44,16 +44,18 @@ class TodosAdapter: RecyclerView.Adapter<TodosAdapter.TodoViewHolder>() {
 
         private val taskNameTextView =itemView.findViewById<TextView>(R.id.taskNameTv)
         private val doneImageView = itemView.findViewById<ImageView>(R.id.doneIv)
+        private val deleteImageView = itemView.findViewById<ImageView>(R.id.deleteIv)
 
         fun bindTo(todo: Todo){
             taskNameTextView.text = "${todo.name}"
-            itemView.setOnClickListener { view -> todoClickListener?.onTodoClicked(todo) }
             doneImageView.visibility = if (todo.done) View.VISIBLE else View.GONE
-
+            itemView.setOnClickListener { view -> todoClickListener?.onTodoClicked(todo) }
+            deleteImageView.setOnClickListener{view -> todoClickListener?.onDeleteTodoClicked(todo) }
         }
     }
 
     interface OnTodoClickListener {
         fun onTodoClicked(todo: Todo)
+        fun onDeleteTodoClicked(todo: Todo)
     }
 }
